@@ -1,21 +1,46 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted, watch } from "vue";
 import AllRegistration from "./components/AllRegistration.vue";
+import { STORE_REGISTRATION } from "@/services/stores";
+
+const { onActionGetRegistrationsStatus } =
+  STORE_REGISTRATION.StoreRegistration();
+
+// Khai báo các tab và nhãn tương ứng
+const tabs = [
+  { value: "all", label: "Tất cả" },
+  { value: "unpaid", label: "Chưa thanh toán" },
+  { value: "pending", label: "Chờ xử lý" },
+  { value: "approved", label: "Chấp nhận" },
+  { value: "rejected", label: "Từ chối" },
+  { value: "canceled", label: "Bị hủy" },
+  { value: "refunded", label: "Hoàn tiền" },
+];
 
 const selectedTab = ref("all");
+const registrationData = ref([]);
+
+// Hàm load data theo trạng thái
+const fetchData = async (status) => {
+  const res = await onActionGetRegistrationsStatus({ status: status });
+  registrationData.value = res.data;
+};
+
+const onSearch = async (params) => {
+  const res = await onActionGetRegistrationsStatus(params);
+  registrationData.value = res.data;
+};
+
+onMounted(() => {
+  fetchData(selectedTab.value);
+});
+
+watch(selectedTab, (newTab) => {
+  fetchData(newTab);
+});
 </script>
 
 <template>
-  <!-- <div class="d-flex justify-end mb-3">
-    <v-btn
-      color="teal-lighten-2"
-      prepend-icon="mdi-file-excel"
-      @click="handleExport"
-    >
-      Xuất File
-    </v-btn>
-  </div> -->
-
   <v-card flat>
     <v-tabs
       v-model="selectedTab"
@@ -24,40 +49,18 @@ const selectedTab = ref("all");
       center-active
       class="border-b-sm"
     >
-      <v-tab value="all">Tất cả</v-tab>
-      <v-tab value="unpaid">Chưa thanh toán</v-tab>
-      <v-tab value="pending">Chờ xử lý</v-tab>
-      <v-tab value="Accepted">Chấp nhận</v-tab>
-      <v-tab value="Rejected">Từ chối</v-tab>
-      <v-tab value="Refunded">Hoàn tiền</v-tab>
+      <v-tab v-for="tab in tabs" :key="tab.value" :value="tab.value">
+        {{ tab.label }}
+      </v-tab>
     </v-tabs>
 
     <v-card-text class="pa-0 bg-grey-lighten-4">
-      <v-tabs-window v-model="selectedTab">
-        <v-tabs-window-item value="all">
-          <AllRegistration :statusFilter="'Tất cả'" />
-        </v-tabs-window-item>
-
-        <v-tabs-window-item value="unpaid">
-          <AllRegistration :statusFilter="'Chưa thanh toán'" />
-        </v-tabs-window-item>
-
-        <v-tabs-window-item value="pending">
-          <AllRegistration :statusFilter="'Chờ xử lý'" />
-        </v-tabs-window-item>
-
-        <v-tabs-window-item value="accepted">
-          <AllRegistration :statusFilter="'Chấp nhận'" />
-        </v-tabs-window-item>
-
-        <v-tabs-window-item value="rejected">
-          <AllRegistration :statusFilter="'Từ chối'" />
-        </v-tabs-window-item>
-
-        <v-tabs-window-item value="refunded">
-          <AllRegistration :statusFilter="'Hoàn tiền'" />
-        </v-tabs-window-item>
-      </v-tabs-window>
+      <!-- Chỉ dùng 1 component, truyền nhãn tương ứng -->
+      <AllRegistration
+        :statusFilter="tabs.find((t) => t.value === selectedTab)?.label"
+        :data="registrationData"
+        @onSearch="onSearch"
+      />
     </v-card-text>
   </v-card>
 </template>

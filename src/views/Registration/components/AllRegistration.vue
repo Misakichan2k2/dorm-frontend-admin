@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineProps, onMounted } from "vue";
+import { ref, computed, defineProps, onMounted, watch } from "vue";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useRouter } from "vue-router";
@@ -18,11 +18,19 @@ const {
 const router = useRouter();
 
 const props = defineProps({
+  data: {
+    type: Array,
+    default: [],
+  },
   statusFilter: {
     type: String,
     default: "Tất cả",
   },
 });
+
+const emits = defineEmits(["onSearch"]);
+
+const dataRegistration = computed(() => props?.data);
 
 const headers = [
   { title: "STT", key: "index", sortable: false, align: "center" },
@@ -44,10 +52,10 @@ const headers = [
 ];
 
 const searchQuery = ref("");
-const statusFilter = ref("Tất cả");
-const buildingFilter = ref("Tất cả");
-const roomFilter = ref("Tất cả");
-const genderFilter = ref("Tất cả");
+const statusFilter = ref("");
+const buildingFilter = ref("");
+const roomFilter = ref("");
+const genderFilter = ref("");
 const genderOptions = ["Tất cả", "Nam", "Nữ"];
 
 const snackbar = ref(false);
@@ -184,49 +192,12 @@ const formatDate = (date) => {
   return date ? format(new Date(date), "dd/MM/yyyy", { locale: vi }) : "";
 };
 
-const filteredRequests = computed(() => {
-  return requests.value.filter((item) => {
-    const keyword = searchQuery.value.toLowerCase();
-
-    const matchesKeyword =
-      (item.fullname?.toLowerCase().includes(keyword) ?? false) ||
-      (item.studentId?.toLowerCase().includes(keyword) ?? false) ||
-      (item.registrationCode?.toLowerCase().includes(keyword) ?? false);
-
-    const matchesStatus =
-      props.statusFilter === "Tất cả" || item.status === props.statusFilter;
-
-    const matchesBuilding =
-      !buildingFilter.value ||
-      buildingFilter.value === "Tất cả" ||
-      item.room.building.name
-        .toLowerCase()
-        .includes(buildingFilter.value.toLowerCase());
-
-    const matchesRoom =
-      !roomFilter.value ||
-      roomFilter.value === "Tất cả" ||
-      item.room.room === roomFilter.value;
-
-    const matchesGender =
-      genderFilter.value === "Tất cả" || item.gender === genderFilter.value;
-
-    return (
-      matchesKeyword &&
-      matchesStatus &&
-      matchesBuilding &&
-      matchesRoom &&
-      matchesGender
-    );
-  });
-});
-
 const resetFilters = () => {
   searchQuery.value = "";
-  statusFilter.value = "Tất cả";
-  buildingFilter.value = "Tất cả";
-  roomFilter.value = "Tất cả";
-  genderFilter.value = "Tất cả";
+  statusFilter.value = "";
+  buildingFilter.value = "";
+  roomFilter.value = "";
+  genderFilter.value = "";
 };
 
 const fetchRegistrations = async () => {
@@ -265,7 +236,7 @@ const saveNote = async () => {
 };
 
 const handleExport = () => {
-  const data = filteredRequests.value.map((item, index) => ({
+  const data = dataRegistration.value?.map((item, index) => ({
     STT: index + 1,
     "Họ và tên": item.fullname,
     "Mã số sinh viên": item.studentId,
@@ -283,8 +254,26 @@ const detailRequest = (rowData) => {
   router.push(`/registration/detail/${rowData._id}`);
 };
 
+const fetchFilteredData = async () => {
+  const params = {
+    search: searchQuery.value,
+    building: buildingFilter.value === "Tất cả" ? null : buildingFilter.value,
+    room: roomFilter.value === "Tất cả" ? null : roomFilter.value,
+    gender: genderFilter.value === "Tất cả" ? null : genderFilter.value,
+  };
+
+  emits("onSearch", params);
+
+  console.log("Gọi API với filter:", params);
+};
+
+watch(
+  [searchQuery, buildingFilter, roomFilter, genderFilter],
+  fetchFilteredData
+);
+
 onMounted(() => {
-  fetchRegistrations();
+  // fetchRegistrations();
   fetchBuildings();
   fetchRooms();
 });
@@ -328,6 +317,8 @@ onMounted(() => {
           <v-combobox
             v-model="roomFilter"
             :items="roomOptions"
+            item-title="title"
+            item-value="value"
             variant="outlined"
             density="compact"
             hide-details
@@ -364,7 +355,7 @@ onMounted(() => {
           <span class="text-blue-grey-darken-2 font-weight-bold">
             Tổng số bản ghi:
             <v-chip color="cyan-lighten-1" class="font-weight-bold">{{
-              filteredRequests.length
+              dataRegistration.length
             }}</v-chip>
           </span>
         </div>
@@ -379,9 +370,10 @@ onMounted(() => {
           </v-btn>
         </div>
       </div>
+
       <v-data-table
         :headers="headers"
-        :items="filteredRequests"
+        :items="dataRegistration"
         :items-per-page="10"
         ref="pdfTable"
         class="elevation-1"

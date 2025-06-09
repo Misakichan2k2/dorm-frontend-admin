@@ -33,6 +33,12 @@ export const StoreRegistration = defineStore("StoreRegistration", () => {
     });
   };
 
+  const onActionGetRegistrationsStatus = async (params) => {
+    return await setup({
+      apiFunction: API.getRegistrationsByStatus(params),
+    });
+  };
+
   const onActionUpdateRegistrationPaymentMethod = async (id, paymentMethod) => {
     return await setup({
       apiFunction: API.updateRegistrationPaymentMethod(id, paymentMethod),
@@ -59,5 +65,6 @@ export const StoreRegistration = defineStore("StoreRegistration", () => {
     onActionUpdateRegistrationPaymentMethod,
     onActionUpdateRegistrationStatus,
     onActionUpdateRegisterFormDetail,
+    onActionGetRegistrationsStatus,
   };
 });

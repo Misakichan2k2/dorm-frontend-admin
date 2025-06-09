@@ -33,6 +33,14 @@ class ApiRegistration {
     });
   };
 
+  getRegistrationsByStatus = async (params) => {
+    return await AxiosInstance({
+      method: "GET",
+      url: `registration/registrations`,
+      params,
+    });
+  };
+
   // ADMIN - Cập nhật trạng hình thức thanh toán
   updateRegistrationPaymentMethod = async (id, paymentMethod) => {
     return await AxiosInstance({

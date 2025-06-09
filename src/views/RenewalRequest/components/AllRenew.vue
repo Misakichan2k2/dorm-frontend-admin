@@ -125,9 +125,9 @@ const filteredRequests = computed(() => {
   return requests.value.filter((item) => {
     const keyword = searchQuery.value.toLowerCase();
     const matchesKeyword =
-      item?.studentName?.toLowerCase().includes(keyword) ||
-      item?.studentId?.toLowerCase().includes(keyword) ||
-      item?.registrationCode?.toLowerCase().includes(keyword);
+      item?.student?.registration?.fullname?.toLowerCase().includes(keyword) ||
+      item?.student?.registration?.studentId?.toLowerCase().includes(keyword) ||
+      item?.renewalRequestId?.toLowerCase().includes(keyword);
 
     const matchesStatus =
       props.statusFilter === "Tất cả" || item.status === props.statusFilter;
@@ -135,12 +135,12 @@ const filteredRequests = computed(() => {
     const matchesBuilding =
       !buildingFilter.value ||
       buildingFilter.value === "Tất cả" ||
-      item.building === buildingFilter.value;
+      item?.stdent?.registration?.room?.building?.name === buildingFilter.value;
 
     const matchesRoom =
       !roomFilter.value ||
       roomFilter.value === "Tất cả" ||
-      item.room === roomFilter.value;
+      item?.stdent?.registration?.room?.room === roomFilter.value;
 
     const matchesGender =
       genderFilter.value === "Tất cả" || item.gender === genderFilter.value;
@@ -296,6 +296,7 @@ onMounted(() => {
           </v-btn>
         </div>
       </div>
+
       <v-data-table
         :headers="headers"
         :items="filteredRequests"
@@ -313,8 +314,8 @@ onMounted(() => {
           }}</v-chip>
         </template>
 
-        <template v-slot:item.date="{ item }">
-          {{ formatDate(item.date) }}
+        <template v-slot:item.createdAt="{ item }">
+          {{ formatDate(item.createdAt) }}
         </template>
 
         <template #item.paymentMethod="{ item }">
