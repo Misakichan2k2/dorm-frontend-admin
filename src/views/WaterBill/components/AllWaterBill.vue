@@ -24,7 +24,7 @@ const headers = [
   { title: "Thành tiền (VNĐ)", key: "totalAmount", sortable: true },
   { title: "Hạn đóng", key: "dueDate", sortable: true },
   { title: "Trạng thái", key: "status", sortable: true, align: "center" },
-  { title: "Quá hạn", key: "overdue", align: "center", sortable: false },
+  // { title: "Quá hạn", key: "overdue", align: "center", sortable: false },
   { title: "Hành động", key: "action", sortable: false },
 ];
 

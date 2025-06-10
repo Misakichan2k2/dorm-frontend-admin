@@ -303,7 +303,7 @@ onMounted(() => {
       <v-data-table
         :headers="headers"
         :items="filteredReports"
-        :items-per-page="5"
+        :items-per-page="10"
         class="elevation-1"
       >
         <template #item.index="{ index }">
@@ -423,7 +423,7 @@ onMounted(() => {
       <v-card-text>
         <v-row dense class="mb-4">
           <v-col cols="12" class="d-flex justify-center">
-            <v-img :src="selectedReport.reportImg" class="rounded"></v-img>
+            <v-img :src="selectedReport.image" class="rounded"></v-img>
           </v-col>
         </v-row>
 
