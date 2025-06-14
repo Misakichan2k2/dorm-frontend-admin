@@ -1,11 +1,11 @@
 export default [
   {
-    path: "/renew-rental",
+    path: "/renewal-request",
     name: "RenewRental",
     component: () => import("../RenewRental.vue"),
   },
   {
-    path: "/renew-student-detail",
+    path: "/renewal-request/:id",
     name: "RenewStudentDetail",
     component: () => import("../components/StudentDetail.vue"),
   },

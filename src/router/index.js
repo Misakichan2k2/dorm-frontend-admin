@@ -11,6 +11,7 @@ import RoutesRenewRental from "@/views/RenewalRequest/service/routes";
 import RoutesAccount from "@/views/Account/service/routes";
 import RoutesStatistics from "@/views/Statistics/service/routes";
 import RoutesFeedback from "@/views/Feedback/service/routes";
+import RoutesSignIn from "@/views/SignIn/service/routes";
 
 const routes = [
   { path: "/", name: "Dashboard", component: Dashboard },
@@ -25,6 +26,7 @@ const routes = [
   ...RoutesAccount,
   ...RoutesStatistics,
   ...RoutesFeedback,
+  ...RoutesSignIn,
 ];
 
 const router = createRouter({

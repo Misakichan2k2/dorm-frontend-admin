@@ -28,6 +28,8 @@ const elementId = computed(() => appLocalStorage.value.elementId);
 const onDeleteAppLocalStorage = () => {
   localStorage.removeItem("AppLocalStorage");
   appLocalStorage.value = ENUM.APP_LOCAL_STORAGE;
+  appLocalStorage.value.userData = ENUM.USER_DATA;
+  appLocalStorage.value.accessToken = null;
 
   setTimeout(() => {
     router.replace({ name: "SignIn" });

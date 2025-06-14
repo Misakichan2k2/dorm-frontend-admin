@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, defineProps, onMounted } from "vue";
+import { ref, computed, defineProps, onMounted, watch } from "vue";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useRouter } from "vue-router";
@@ -8,19 +8,25 @@ import { STORE_RENEWAL } from "@/services/stores";
 
 const {
   onActionGetAllRenewals,
-  onActionGetRenewalById,
+  onActionGetBuildings,
+  onActionGetRooms,
   onActionUpdateRenewalStatus,
   onActionUpdateRenewalFormDetail,
+  onActionUpdateRenewalPaymentMethod,
 } = STORE_RENEWAL.StoreRenewal();
 
 const router = useRouter();
 
 const props = defineProps({
-  statusFilter: {
-    type: String,
-    default: "Tất cả",
+  data: {
+    type: Array,
+    default: [],
   },
 });
+
+const emits = defineEmits(["onSearch"]);
+
+const dataRegistration = computed(() => props?.data);
 
 const headers = [
   { title: "STT", key: "index", sortable: false, align: "center" },
@@ -38,43 +44,24 @@ const headers = [
   },
   { title: "Giới tính", key: "student.registration.gender", align: "center" },
   { title: "Ngày gửi", key: "createdAt" },
-  { title: "Khu", key: "stdent.registration.room.building.name" },
+  { title: "Khu", key: "student.registration.room.building.name" },
   { title: "Phòng", key: "student.registration.room.room" },
+  { title: "Thời gian gia hạn", key: "duration" },
   { title: "Hình thức thanh toán", key: "paymentMethod", align: "center" },
   { title: "Trạng thái", key: "status", align: "center" },
   { title: "Hành động", key: "actions", align: "center", sortable: false },
 ];
 
 const searchQuery = ref("");
-const statusFilter = ref("Tất cả");
-const buildingFilter = ref("Tất cả");
-const roomFilter = ref("Tất cả");
-const genderFilter = ref("Tất cả");
-
-const buildingOptions = ["Tất cả", "A1", "B2"];
-const roomOptions = ["Tất cả", "101", "203", "105"];
+const statusFilter = ref("");
+const buildingFilter = ref("");
+const roomFilter = ref("");
+const genderFilter = ref("");
 const genderOptions = ["Tất cả", "Nam", "Nữ"];
-const statusOptions = [
-  "Tất cả",
-  "Chờ xử lý",
-  "Chấp nhận",
-  "Từ chối",
-  "Hoàn tiền",
-];
 
-const requests = ref([
-  // {
-  //   registrationCode: "RR12021",
-  //   studentName: "Nguyễn Văn A",
-  //   studentId: "SV001",
-  //   gender: "Nam",
-  //   date: "2025-04-01",
-  //   building: "A1",
-  //   room: "101",
-  //   paymentMethod: "Tiền mặt",
-  //   status: "Chờ xử lý",
-  // },
-]);
+const requests = ref([]);
+const buildings = ref([]);
+const rooms = ref([]);
 
 const fetchRenewals = () => {
   onActionGetAllRenewals()
@@ -84,16 +71,97 @@ const fetchRenewals = () => {
     .catch(console.error);
 };
 
+const fetchBuildings = () => {
+  onActionGetBuildings()
+    .then((res) => {
+      buildings.value = res.data;
+    })
+    .catch(console.error);
+};
+
+const fetchRooms = async () => {
+  await onActionGetRooms()
+    .then((res) => {
+      rooms.value = res?.data;
+    })
+    .catch(console.error);
+};
+
+const buildingOptionsFilter = computed(() => [
+  "Tất cả",
+  ...buildings.value.map((b) => b.name).sort((a, b) => a.localeCompare(b)),
+]);
+
+const roomOptions = computed(() => {
+  const roomNumbers = rooms.value.map((r) => r.room);
+  const uniqueRoomNumbers = Array.from(new Set(roomNumbers));
+
+  // sắp xếp tăng dần theo số (nếu phòng là số)
+  uniqueRoomNumbers.sort((a, b) => parseInt(a) - parseInt(b));
+
+  return ["Tất cả", ...uniqueRoomNumbers];
+});
+
+const statusOptions = [
+  { label: "Chưa thanh toán", value: "unpaid" },
+  { label: "Chờ xử lý", value: "pending" },
+  { label: "Chấp nhận", value: "approved" },
+  { label: "Từ chối", value: "rejected" },
+  { label: "Bị hủy", value: "canceled" },
+  { label: "Hoàn tiền", value: "refunded" },
+];
+
 const getStatusColor = (status) => {
   switch (status) {
-    case "Chờ xử lý":
-      return "blue";
-    case "Chấp nhận":
+    case "approved":
       return "green";
-    case "Từ chối":
+    case "pending":
+      return "blue";
+    case "unpaid":
+      return "orange";
+    case "rejected":
       return "red";
-    default:
+    case "canceled":
       return "grey";
+    default:
+      return "brown";
+  }
+};
+
+const getStatusLabel = (status) => {
+  switch (status) {
+    case "approved":
+      return "Chấp nhận";
+    case "pending":
+      return "Chờ xử lý";
+    case "unpaid":
+      return "Chưa thanh toán";
+    case "rejected":
+      return "Từ chối";
+    case "canceled":
+      return "Bị hủy";
+    default:
+      return "Hoàn tiền";
+  }
+};
+
+const onStatusChange = async (item) => {
+  console.log(item);
+
+  try {
+    await onActionUpdateRenewalStatus(item._id, item.status);
+
+    snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
+      item.status
+    )}" cho sinh viên "${item.fullname}"`;
+    snackbarColor.value = "success";
+    snackbar.value = true;
+
+    fetchRenewals();
+  } catch (error) {
+    snackbarText.value = `Cập nhật trạng thái cho sinh viên "${item.fullname}" thất bại!`;
+    snackbarColor.value = "error";
+    snackbar.value = true;
   }
 };
 
@@ -110,85 +178,67 @@ function getpaymentMethodColor(value) {
   }
 }
 
-function onPaymentMethodChange(item) {
-  console.log("Payment method changed:", item.paymentMethod);
-
-  snackbarText.value = `Đã chọn hình thức thanh toán: ${item.paymentMethod}`;
-  snackbar.value = true;
-}
+const onUpdatePaymentMethod = async (item) => {
+  try {
+    await onActionUpdateRenewalPaymentMethod(item._id, item.paymentMethod);
+    snackbarText.value = `Cập nhật phương thức thanh toán cho sinh viên "${item.student.registration.fullname}" thành công.`;
+    snackbarColor.value = "green";
+  } catch (error) {
+    snackbarText.value = `Cập nhật thất bại: ${
+      error.response?.data?.message || error.message
+    }`;
+    snackbarColor.value = "red";
+  } finally {
+    snackbar.value = true;
+  }
+};
 
 const formatDate = (date) => {
   return date ? format(new Date(date), "dd/MM/yyyy", { locale: vi }) : "";
 };
 
-const filteredRequests = computed(() => {
-  return requests.value.filter((item) => {
-    const keyword = searchQuery.value.toLowerCase();
-    const matchesKeyword =
-      item?.student?.registration?.fullname?.toLowerCase().includes(keyword) ||
-      item?.student?.registration?.studentId?.toLowerCase().includes(keyword) ||
-      item?.renewalRequestId?.toLowerCase().includes(keyword);
-
-    const matchesStatus =
-      props.statusFilter === "Tất cả" || item.status === props.statusFilter;
-
-    const matchesBuilding =
-      !buildingFilter.value ||
-      buildingFilter.value === "Tất cả" ||
-      item?.stdent?.registration?.room?.building?.name === buildingFilter.value;
-
-    const matchesRoom =
-      !roomFilter.value ||
-      roomFilter.value === "Tất cả" ||
-      item?.stdent?.registration?.room?.room === roomFilter.value;
-
-    const matchesGender =
-      genderFilter.value === "Tất cả" || item.gender === genderFilter.value;
-
-    return (
-      matchesKeyword &&
-      matchesStatus &&
-      matchesBuilding &&
-      matchesRoom &&
-      matchesGender
-    );
-  });
-});
-
 const resetFilters = () => {
   searchQuery.value = "";
-  statusFilter.value = "Tất cả";
-  buildingFilter.value = "Tất cả";
-  roomFilter.value = "Tất cả";
-  genderFilter.value = "Tất cả";
-};
-
-const onStatusChange = (item) => {
-  snackbarText.value = `Đã cập nhật trạng thái thành "${item.status}" cho "${item.studentName}"`;
-  snackbar.value = true;
-};
-
-const detailRequest = () => {
-  router.push("/renew-student-detail");
+  statusFilter.value = "";
+  buildingFilter.value = "";
+  roomFilter.value = "";
+  genderFilter.value = "";
 };
 
 const snackbar = ref(false);
 const snackbarText = ref("");
+const snackbarColor = ref("green");
 
 const dialogNote = ref(false);
 const note = ref("");
+const selectedItem = ref(null);
 
-const saveNote = () => {
-  console.log("Ci tiết:", note.value);
+const openDialogNote = (item) => {
+  selectedItem.value = item;
+  note.value = item.notes || "";
+  dialogNote.value = true;
+};
 
-  snackbarText.value = "Đã lưu chi tiết đơn đăng ký phòng!";
-  snackbar.value = true;
+const saveNote = async () => {
+  try {
+    await onActionUpdateRenewalFormDetail(selectedItem.value._id, note.value);
 
-  dialogNote.value = false;
+    fetchRenewals();
+
+    snackbarText.value = "Đã lưu chi tiết đơn gia hạn thuê phòng!";
+    snackbarColor.value = "green";
+  } catch (error) {
+    snackbarText.value =
+      "Lưu thất bại: " + (error.response?.data?.message || error.message);
+    snackbarColor.value = "red";
+  } finally {
+    snackbar.value = true;
+    dialogNote.value = false;
+  }
 };
 
 const handleExport = () => {
-  const data = filteredRequests.value.map((item, index) => ({
+  const data = dataRegistration.value.map((item, index) => ({
     STT: index + 1,
     "Họ và tên": item.studentName,
     "Mã số sinh viên": item.studentId,
@@ -202,8 +252,34 @@ const handleExport = () => {
   exportToExcel(data, "danh-sach-yeu-cau-gia-han-phong");
 };
 
+const detailRequest = (rowData) => {
+  console.log(rowData);
+
+  router.push(`/renewal-request/${rowData?.student?.registration?._id}`);
+};
+
+const fetchFilteredData = async () => {
+  const params = {
+    search: searchQuery.value,
+    building: buildingFilter.value === "Tất cả" ? null : buildingFilter.value,
+    room: roomFilter.value === "Tất cả" ? null : roomFilter.value,
+    gender: genderFilter.value === "Tất cả" ? null : genderFilter.value,
+  };
+
+  emits("onSearch", params);
+
+  console.log("Gọi API với filter:", params);
+};
+
+watch(
+  [searchQuery, buildingFilter, roomFilter, genderFilter],
+  fetchFilteredData
+);
+
 onMounted(() => {
   fetchRenewals();
+  fetchBuildings();
+  fetchRooms();
 });
 </script>
 
@@ -213,7 +289,7 @@ onMounted(() => {
     <v-card class="pa-4 bg-white" elevation="2">
       <div class="mb-5 text-center" flat>
         <div class="text-h5 font-weight-bold text-blue-darken-3">
-          Quản lý yêu cầu gia hạn thuê phòng
+          Xử lý yêu cầu gia hạn thuê phòng
         </div>
       </div>
       <v-row dense>
@@ -233,7 +309,7 @@ onMounted(() => {
           <span>Khu nhà:</span>
           <v-combobox
             v-model="buildingFilter"
-            :items="buildingOptions"
+            :items="buildingOptionsFilter"
             variant="outlined"
             density="compact"
             hide-details
@@ -280,9 +356,9 @@ onMounted(() => {
         <div class="pa-3 d-flex align-center">
           <span class="text-blue-grey-darken-2 font-weight-bold">
             Tổng số bản ghi:
-            <v-chip color="cyan-lighten-1" class="font-weight-bold">{{
-              filteredRequests.length
-            }}</v-chip>
+            <v-chip color="cyan-lighten-1" class="font-weight-bold">
+              {{ dataRegistration?.length }}
+            </v-chip>
           </span>
         </div>
         <div class="d-flex justify-end pr-3">
@@ -299,8 +375,8 @@ onMounted(() => {
 
       <v-data-table
         :headers="headers"
-        :items="filteredRequests"
-        :items-per-page="5"
+        :items="dataRegistration"
+        :items-per-page="10"
         ref="pdfTable"
         class="elevation-1"
       >
@@ -318,6 +394,16 @@ onMounted(() => {
           {{ formatDate(item.createdAt) }}
         </template>
 
+        <template v-slot:item.duration="{ item }">
+          {{ String(item.month).padStart(2, "0") }} / {{ item.year }}
+        </template>
+
+        <template
+          v-slot:item.student.registration.room.building.name="{ item }"
+        >
+          Khu {{ item?.student?.registration?.room?.building?.name }}
+        </template>
+
         <template #item.paymentMethod="{ item }">
           <v-select
             v-model="item.paymentMethod"
@@ -325,7 +411,7 @@ onMounted(() => {
             variant="plain"
             density="compact"
             hide-details
-            @update:modelValue="onPaymentMethodChange(item)"
+            @update:modelValue="onUpdatePaymentMethod(item)"
           >
             <template #selection="{ item: method }">
               <div style="margin-right: -5rem">
@@ -344,20 +430,22 @@ onMounted(() => {
         <template #item.status="{ item }">
           <v-select
             v-model="item.status"
-            :items="statusOptions.filter((s) => s !== 'Tất cả')"
+            :items="statusOptions"
+            item-title="label"
+            item-value="value"
             variant="plain"
             density="compact"
             hide-details
             @update:modelValue="onStatusChange(item)"
           >
             <template #selection="{ item: statusItem }">
-              <div style="margin-right: -1rem">
+              <div style="margin-right: 2rem">
                 <v-chip
                   :color="getStatusColor(statusItem.value)"
                   text-color="white"
                   small
                 >
-                  {{ statusItem.value }}
+                  {{ statusItem.raw.label }}
                 </v-chip>
               </div>
             </template>
@@ -374,7 +462,7 @@ onMounted(() => {
               variant="text"
               rounded="lg"
               size="small"
-              @click="detailRequest"
+              @click="detailRequest(item)"
               ><v-icon></v-icon>
               <v-tooltip activator="parent" location="top"
                 >Xem chi tiết</v-tooltip
@@ -388,7 +476,7 @@ onMounted(() => {
               variant="text"
               rounded="lg"
               size="small"
-              @click="dialogNote = true"
+              @click="openDialogNote(item)"
               ><v-icon></v-icon>
               <v-tooltip activator="parent" location="top"
                 >Thêm chi tiết</v-tooltip
@@ -414,7 +502,7 @@ onMounted(() => {
   <v-snackbar
     v-model="snackbar"
     :timeout="2000"
-    color="success"
+    :color="snackbarColor"
     rounded="pill"
     location="top right"
   >

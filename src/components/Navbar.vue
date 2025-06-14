@@ -69,7 +69,7 @@ const onLogout = () => {
         prepend-icon="mdi mdi-calendar-clock"
         title="Yêu cầu Gia hạn thuê phòng"
         value="renewRental"
-        :to="'/renew-rental'"
+        :to="'/renewal-request'"
       ></v-list-item>
       <v-list-item
         prepend-icon="mdi mdi-table-account"

@@ -239,6 +239,23 @@ const handleExport = () => {
   exportToExcel(data, "danh-sach-phong-o");
 };
 
+const onBuildingSelect = (buildingId) => {
+  console.log(buildingId);
+
+  const selectedBuilding = buildings?.value?.find((b) => b._id === buildingId);
+  if (selectedBuilding) {
+    if (selectedBuilding.type.includes("nữ")) {
+      newRoom.value.gender = "Nữ";
+    } else if (selectedBuilding.type.includes("nam")) {
+      newRoom.value.gender = "Nam";
+    } else {
+      newRoom.value.gender = "";
+    }
+  } else {
+    newRoom.value.gender = "";
+  }
+};
+
 onMounted(() => {
   fetchRooms();
   fetchBuildings();
@@ -475,13 +492,17 @@ onMounted(() => {
     </v-card>
   </v-container>
 
+  <!-- <small style="margin-top: -2rem">
+          {{ buildings.filter((x) => x._id === newRoom?.building)[0].type }}
+        </small>
+        <br /> -->
   <!-- Dialog Thêm mới -->
   <v-dialog v-model="dialogNewRoom" max-width="500">
     <v-card>
       <v-card-title class="text-h5"> Thêm phòng mới </v-card-title>
       <v-card-text>
         <span>Khu nhà:</span>
-        <v-autocomplete
+        <!-- <v-autocomplete
           v-model="newRoom.building"
           :items="buildingOptions"
           item-title="title"
@@ -489,8 +510,17 @@ onMounted(() => {
           placeholder="Chọn khu"
           variant="outlined"
           density="compact"
+        /> -->
+        <v-autocomplete
+          v-model="newRoom.building"
+          :items="buildings"
+          item-title="name"
+          item-value="_id"
+          placeholder="Chọn khu"
+          variant="outlined"
+          density="compact"
+          @update:model-value="onBuildingSelect"
         />
-
         <span>Số phòng:</span>
         <v-text-field
           v-model="newRoom.room"
@@ -500,13 +530,23 @@ onMounted(() => {
         ></v-text-field>
 
         <span>Giới tính:</span>
+        <!-- <v-select
+          v-model="newRoom.gender"
+          :items="['Nam', 'Nữ']"
+          placeholder="Giới tính"
+          variant="outlined"
+          density="compact"
+        ></v-select> -->
+
         <v-select
           v-model="newRoom.gender"
           :items="['Nam', 'Nữ']"
           placeholder="Giới tính"
           variant="outlined"
           density="compact"
-        ></v-select>
+          :disabled="true"
+          readonly
+        />
 
         <span>Giá thuê phòng:</span>
         <v-text-field
@@ -515,14 +555,6 @@ onMounted(() => {
           variant="outlined"
           density="compact"
         ></v-text-field>
-
-        <!-- <span>Định mức ở:</span>
-        <v-text-field
-          v-model="newRoom.building.peoplePerRoom"
-          placeholder="Định mức ở"
-          variant="outlined"
-          density="compact"
-        ></v-text-field> -->
 
         <span>Trạnh thái:</span>
         <v-select

@@ -55,12 +55,7 @@ watch(selectedTab, (newTab) => {
     </v-tabs>
 
     <v-card-text class="pa-0 bg-grey-lighten-4">
-      <!-- Chỉ dùng 1 component, truyền nhãn tương ứng -->
-      <AllRegistration
-        :statusFilter="tabs.find((t) => t.value === selectedTab)?.label"
-        :data="registrationData"
-        @onSearch="onSearch"
-      />
+      <AllRegistration :data="registrationData" @onSearch="onSearch" />
     </v-card-text>
   </v-card>
 </template>

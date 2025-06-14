@@ -403,7 +403,7 @@ onMounted(() => {
   </v-dialog>
 
   <!-- Dialog chi tiết -->
-  <v-dialog v-model="detailDialog" max-width="650">
+  <v-dialog v-model="detailDialog" max-width="700">
     <v-card rounded="lg">
       <v-card-title
         class="d-flex text-h6 font-weight-bold justify-space-between pa-5"

@@ -1,3 +1,5 @@
+import { appStore } from "@/stores/appStore";
+
 export const RESPONSE = () => {
   const setup = async ({
     apiFunction = () => {
@@ -5,32 +7,21 @@ export const RESPONSE = () => {
     },
     isLoading = true,
   }) => {
-    if (isLoading) {
-      // StoreApp().onActionIsLoading(true);
-    }
+    return apiFunction
+      .then((data) => {
+        console.log(data);
 
-    let result = null;
+        return data;
+      })
+      .catch((error) => {
+        console.log(error);
 
-    try {
-      const response = await apiFunction;
-
-      result = response; // Trả về toàn bộ response
-    } catch (error) {
-      console.log("sbc");
-      console.log(error);
-
-      if (error?.response?.data?.message) {
-        result = error.response;
-
-        // if (toast.isShow) {
-        //   TOAST.error(error.response.data.message);
-        // }
-      }
-    } finally {
-      // if (isLoading) StoreApp().onActionIsLoading(false);
-    }
-
-    return result; // Trả về toàn bộ response
+        appStore().onActionSetPopupMessage({
+          type: "error",
+          content: error?.response?.data?.message,
+        });
+        throw error;
+      });
   };
 
   return { setup };

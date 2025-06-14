@@ -19,26 +19,19 @@ async function onSubmit() {
 
   loading.value = true;
 
-  const res = await onActionSignIn({
+  await onActionSignIn({
     email: email.value,
     password: password.value,
-  });
+  })
+    .then((res) => {
+      appLocalStorage.value.userData = res?.data || ENUM.USER_DATA;
+      appLocalStorage.value.accessToken = res?.data?.token || "";
 
-  if (res.status === 200) {
-    appLocalStorage.value.userData = res?.data || ENUM.USER_DATA;
-    appLocalStorage.value.accessToken = res?.data?.token || "";
-
-    router.push("/room-registration");
-  } else {
-    toast.add({
-      severity: "error",
-      summary: "Login failed",
-      detail: res.message || "Email hoặc mật khẩu không đúng.",
-      life: 3000,
+      router.push("/");
+    })
+    .finally(() => {
+      loading.value = false;
     });
-  }
-
-  loading.value = false;
 }
 
 function required(v) {

@@ -22,10 +22,6 @@ const props = defineProps({
     type: Array,
     default: [],
   },
-  statusFilter: {
-    type: String,
-    default: "Tất cả",
-  },
 });
 
 const emits = defineEmits(["onSearch"]);
@@ -65,6 +61,16 @@ const snackbarColor = ref("green");
 const requests = ref([]);
 const buildings = ref([]);
 const rooms = ref([]);
+const dialogNote = ref(false);
+const note = ref("");
+const selectedItem = ref({ _id: null });
+
+const fetchRegistrations = async () => {
+  await onActionGetAllRegistrations().then((res) => {
+    console.log(res?.data?.data);
+    requests.value = res?.data?.data;
+  });
+};
 
 const fetchBuildings = () => {
   onActionGetBuildings()
@@ -141,23 +147,30 @@ const getStatusLabel = (status) => {
 };
 
 const onStatusChange = async (item) => {
-  console.log(item);
+  // if (item.status === "rejected") {
+  console.log(item?._id);
 
-  try {
-    await onActionUpdateRegistrationStatus(item._id, item.status);
+  // selectedItem.value._id = item?._id;
+  // dialogNote.value = true;
+  openDialogNote(item);
+  // console.log(dialogNote.value);
 
-    snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
-      item.status
-    )}" cho sinh viên "${item.fullname}"`;
-    snackbarColor.value = "success";
-    snackbar.value = true;
-
-    fetchRegistrations();
-  } catch (error) {
-    snackbarText.value = `Cập nhật trạng thái cho sinh viên "${item.fullname}" thất bại!`;
-    snackbarColor.value = "error";
-    snackbar.value = true;
-  }
+  console.log(selectedItem.value);
+  // } else {
+  //   try {
+  //     await onActionUpdateRegistrationStatus(item._id, item.status);
+  //     snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
+  //       item.status
+  //     )}" cho sinh viên "${item.fullname}"`;
+  //     snackbarColor.value = "success";
+  //     snackbar.value = true;
+  //     fetchRegistrations();
+  //   } catch (error) {
+  //     snackbarText.value = `Cập nhật trạng thái cho sinh viên "${item.fullname}" thất bại!`;
+  //     snackbarColor.value = "error";
+  //     snackbar.value = true;
+  //   }
+  // }
 };
 
 const paymentMethods = ["Chuyển khoản", "Tiền mặt"];
@@ -200,39 +213,51 @@ const resetFilters = () => {
   genderFilter.value = "";
 };
 
-const fetchRegistrations = async () => {
-  await onActionGetAllRegistrations().then((res) => {
-    console.log(res?.data?.data);
-    requests.value = res?.data?.data;
-  });
-};
-
-const dialogNote = ref(false); // trạng thái dialog
-const note = ref("");
-const selectedItem = ref(null);
-
 const openDialogNote = (item) => {
   selectedItem.value = item;
-  note.value = item.registerFormDetail || "";
+  // note.value = item.registerFormDetail || "";
+
+  if (item?.status === "approved") {
+    note.value = `Đơn đăng ký phòng của bạn đã được duyệt. Thời gian thuê phòng bắt đầu từ ngày ${formatDate(
+      item.startDate
+    )}. Vui lòng đến phòng quản lý ký túc xá để nhận chìa khóa.`;
+  } else if (item?.status === "rejected") {
+    note.value =
+      "Rất tiếc, đơn đăng ký phòng của bạn đã bị từ chối. Vui lòng liên hệ Ban Quản lý Ký túc xá để biết thêm chi tiết. Ngoài ra, bạn vui lòng đến phòng Quản lý Ký túc xá để nhận lại số tiền đã thanh toán.";
+  } else if (item?.status === "pending") {
+    note.value =
+      "Đơn đăng ký phòng của bạn đang chờ được xét duyệt. Vui lòng đợi hoặc liên hệ ban quản lý để biết thêm chi tiết.";
+  } else if (item?.status === "unpaid") {
+    note.value =
+      "Bạn chưa thanh toán. Vui lòng hoàn tất thanh toán trong vòng 24 giờ kể từ khi tạo đơn để đơn đăng ký không bị hủy.";
+  } else if (item?.status === "refunded") {
+    note.value = `Việc hoàn trả tiền cho sinh viên đã được thực hiện thành công.`;
+  } else {
+    note.value = ``;
+  }
   dialogNote.value = true;
 };
 
 const saveNote = async () => {
-  try {
-    await onActionUpdateRegisterFormDetail(selectedItem.value._id, note.value);
+  console.log(selectedItem.value._id, note.value);
 
-    await fetchRegistrations();
+  // await onActionUpdateRegisterFormDetail(selectedItem.value._id, note.value);
 
-    snackbarText.value = "Đã lưu chi tiết đơn đăng ký phòng!";
-    snackbarColor.value = "green";
-  } catch (error) {
-    snackbarText.value =
-      "Lưu thất bại: " + (error.response?.data?.message || error.message);
-    snackbarColor.value = "red";
-  } finally {
-    snackbar.value = true;
-    dialogNote.value = false;
-  }
+  // try {
+  //   await onActionUpdateRegisterFormDetail(selectedItem.value._id, note.value);
+
+  //   await fetchRegistrations();
+
+  //   snackbarText.value = "Đã lưu chi tiết đơn đăng ký phòng!";
+  //   snackbarColor.value = "green";
+  // } catch (error) {
+  //   snackbarText.value =
+  //     "Lưu thất bại: " + (error.response?.data?.message || error.message);
+  //   snackbarColor.value = "red";
+  // } finally {
+  //   snackbar.value = true;
+  //   dialogNote.value = false;
+  // }
 };
 
 const handleExport = () => {
@@ -285,7 +310,7 @@ onMounted(() => {
     <v-card class="pa-4 bg-white" elevation="2">
       <div class="mb-5 text-center" flat>
         <div class="text-h5 font-weight-bold text-blue-darken-3">
-          Quản lý yêu cầu đăng ký phòng
+          Xử lý yêu cầu đăng ký phòng
         </div>
       </div>
       <v-row dense>
@@ -495,7 +520,7 @@ onMounted(() => {
   <v-snackbar
     v-model="snackbar"
     :timeout="2000"
-    color="success"
+    :color="snackbarColor"
     rounded="pill"
     location="top right"
   >

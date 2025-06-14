@@ -11,6 +11,7 @@ export * as STORE_REGISTRATION from "@/views/Registration/service/store";
 export * as STORE_FEEDBACK from "@/views/Feedback/service/store";
 export * as STORE_ACCOUNT from "@/views/Account/service/store";
 export * as STORE_RENEWAL from "@/views/RenewalRequest/service/store";
+export * as STORE_AUTH from "@/views/SignIn/service/store";
 
 export const StoreApp = defineStore("StoreApp", () => {
   const routeSignIn = ref("");
