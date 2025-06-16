@@ -30,7 +30,7 @@ const profile = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 11.2px 20px;
+  padding: 10.5px 20px;
   background: linear-gradient(to right, #fcfeff, #eef8ff, #fff4fd);
   border-bottom: 1px solid #e1e1e1;
 }

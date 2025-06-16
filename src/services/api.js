@@ -20,6 +20,8 @@ export * as API_FEEDBACK from "@/views/Feedback/service/api";
 export * as API_ACCOUNT from "@/views/Account/service/api";
 export * as API_RENEWAL from "@/views/RenewalRequest/service/api";
 export * as API_AUTH from "@/views/SignIn/service/api";
+export * as API_STATISTICS from "@/views/Statistics/service/api";
+export * as API_DASHBOARD from "@/views/Dashboard/service/api";
 
 class ApiApp {}
 

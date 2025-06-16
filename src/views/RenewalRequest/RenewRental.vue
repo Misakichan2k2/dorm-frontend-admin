@@ -21,8 +21,6 @@ const requests = ref([]);
 const fetchData = async (status) => {
   const res = await onActionGetRenewalByParams({ status: status });
   requests.value = res.data;
-  console.log(status);
-  console.log(requests.value);
 };
 
 const onSearch = async (params) => {
@@ -40,16 +38,6 @@ watch(selectedTab, (newTab) => {
 </script>
 
 <template>
-  <!-- <div class="d-flex justify-end mb-3">
-    <v-btn
-      color="teal-lighten-2"
-      prepend-icon="mdi-file-excel"
-      @click="handleExport"
-    >
-      Xuất File
-    </v-btn>
-  </div> -->
-
   <v-card flat>
     <v-tabs
       v-model="selectedTab"
@@ -64,7 +52,11 @@ watch(selectedTab, (newTab) => {
     </v-tabs>
 
     <v-card-text class="pa-0 bg-grey-lighten-4">
-      <AllRenewRental :data="requests" @onSearch="onSearch" />
+      <AllRenewRental
+        :data="requests"
+        @onSearch="onSearch"
+        @callApi="fetchData(selectedTab)"
+      />
     </v-card-text>
   </v-card>
 </template>

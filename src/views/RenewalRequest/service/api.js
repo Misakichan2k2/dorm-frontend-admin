@@ -61,11 +61,11 @@ class ApiRenewal {
   };
 
   // ADMIN - Cập nhật chi tiết thông tin form đăng ký
-  updateRenewalFormDetail = async (id, data) => {
+  updateRenewalFormDetail = async (id, notes) => {
     return await AxiosInstance({
       method: "PATCH",
       url: `renewals/${id}/note`,
-      data,
+      data: { notes },
     });
   };
 }

@@ -279,7 +279,11 @@ onMounted(async () => {
           <v-btn
             color="primary"
             size="small"
-            :disabled="item.empty === 0"
+            elevation="0"
+            :disabled="
+              item.empty === 0 ||
+              item.gender !== studentInfo.registration.gender
+            "
             @click="openTransferDialog(item)"
           >
             Chuyển
@@ -299,7 +303,7 @@ onMounted(async () => {
   </v-container>
 
   <!-- Dialog Chuyển phòng -->
-  <v-dialog v-model="confirmTransferDialog" max-width="400px" persistent>
+  <v-dialog v-model="confirmTransferDialog" max-width="400px">
     <v-card>
       <p class="pa-6 text-center text-grey-darken-3">
         Bạn có chắc chắn muốn chuyển sang phòng {{ selectedRoom?.room }} Khu

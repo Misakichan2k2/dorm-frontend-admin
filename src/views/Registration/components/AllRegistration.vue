@@ -24,7 +24,7 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["onSearch"]);
+const emits = defineEmits(["onSearch", "callApi"]);
 
 const dataRegistration = computed(() => props?.data);
 
@@ -42,6 +42,7 @@ const headers = [
   { title: "Ngày gửi", key: "createdAt" },
   { title: "Khu", key: "room.building.name" },
   { title: "Phòng", key: "room.room" },
+  { title: "Thời gian thuê", key: "duration" },
   { title: "Hình thức thanh toán", key: "paymentMethod" },
   { title: "Trạng thái", key: "status", align: "center" },
   { title: "Hành động", key: "actions", align: "center", sortable: false },
@@ -67,7 +68,6 @@ const selectedItem = ref({ _id: null });
 
 const fetchRegistrations = async () => {
   await onActionGetAllRegistrations().then((res) => {
-    console.log(res?.data?.data);
     requests.value = res?.data?.data;
   });
 };
@@ -125,7 +125,7 @@ const getStatusColor = (status) => {
     case "canceled":
       return "grey";
     default:
-      return "yellow";
+      return "purple";
   }
 };
 
@@ -147,30 +147,7 @@ const getStatusLabel = (status) => {
 };
 
 const onStatusChange = async (item) => {
-  // if (item.status === "rejected") {
-  console.log(item?._id);
-
-  // selectedItem.value._id = item?._id;
-  // dialogNote.value = true;
   openDialogNote(item);
-  // console.log(dialogNote.value);
-
-  console.log(selectedItem.value);
-  // } else {
-  //   try {
-  //     await onActionUpdateRegistrationStatus(item._id, item.status);
-  //     snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
-  //       item.status
-  //     )}" cho sinh viên "${item.fullname}"`;
-  //     snackbarColor.value = "success";
-  //     snackbar.value = true;
-  //     fetchRegistrations();
-  //   } catch (error) {
-  //     snackbarText.value = `Cập nhật trạng thái cho sinh viên "${item.fullname}" thất bại!`;
-  //     snackbarColor.value = "error";
-  //     snackbar.value = true;
-  //   }
-  // }
 };
 
 const paymentMethods = ["Chuyển khoản", "Tiền mặt"];
@@ -213,51 +190,61 @@ const resetFilters = () => {
   genderFilter.value = "";
 };
 
-const openDialogNote = (item) => {
+const openDialogNote = (item, isDetail = false) => {
   selectedItem.value = item;
-  // note.value = item.registerFormDetail || "";
 
-  if (item?.status === "approved") {
-    note.value = `Đơn đăng ký phòng của bạn đã được duyệt. Thời gian thuê phòng bắt đầu từ ngày ${formatDate(
-      item.startDate
-    )}. Vui lòng đến phòng quản lý ký túc xá để nhận chìa khóa.`;
-  } else if (item?.status === "rejected") {
-    note.value =
-      "Rất tiếc, đơn đăng ký phòng của bạn đã bị từ chối. Vui lòng liên hệ Ban Quản lý Ký túc xá để biết thêm chi tiết. Ngoài ra, bạn vui lòng đến phòng Quản lý Ký túc xá để nhận lại số tiền đã thanh toán.";
-  } else if (item?.status === "pending") {
-    note.value =
-      "Đơn đăng ký phòng của bạn đang chờ được xét duyệt. Vui lòng đợi hoặc liên hệ ban quản lý để biết thêm chi tiết.";
-  } else if (item?.status === "unpaid") {
-    note.value =
-      "Bạn chưa thanh toán. Vui lòng hoàn tất thanh toán trong vòng 24 giờ kể từ khi tạo đơn để đơn đăng ký không bị hủy.";
-  } else if (item?.status === "refunded") {
-    note.value = `Việc hoàn trả tiền cho sinh viên đã được thực hiện thành công.`;
+  if (isDetail) {
+    console.log(item);
+
+    note.value = item.registerFormDetail || "";
   } else {
-    note.value = ``;
+    if (item?.status === "approved") {
+      note.value = `Đơn đăng ký phòng của bạn đã được duyệt. Thời gian thuê phòng bắt đầu từ ngày ${formatDate(
+        item.startDate
+      )}. Vui lòng đến phòng quản lý ký túc xá để nhận chìa khóa.`;
+    } else if (item?.status === "rejected") {
+      note.value =
+        "Rất tiếc, đơn đăng ký phòng của bạn đã bị từ chối. Ngoài ra, bạn vui lòng đến phòng Quản lý Ký túc xá để nhận lại số tiền đã thanh toán. Mọi thắc mắc xin liên hệ ban quản lý ký túc xá";
+    } else if (item?.status === "pending") {
+      note.value =
+        "Đơn đăng ký phòng của bạn đang chờ được xét duyệt. Vui lòng đợi hoặc liên hệ ban quản lý để biết thêm chi tiết.";
+    } else if (item?.status === "unpaid") {
+      note.value =
+        "Bạn chưa thanh toán. Vui lòng hoàn tất thanh toán trong vòng 24 giờ kể từ khi tạo đơn để đơn đăng ký không bị hủy.";
+    } else if (item?.status === "refunded") {
+      note.value = `Việc hoàn trả tiền cho sinh viên đã được thực hiện thành công.`;
+    } else {
+      note.value = ``;
+    }
   }
+
   dialogNote.value = true;
 };
 
 const saveNote = async () => {
-  console.log(selectedItem.value._id, note.value);
+  await onActionUpdateRegisterFormDetail(selectedItem.value._id, note.value);
 
-  // await onActionUpdateRegisterFormDetail(selectedItem.value._id, note.value);
+  await onActionUpdateRegistrationStatus(
+    selectedItem.value._id,
+    selectedItem.value.status
+  )
+    .then(() => {
+      snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
+        selectedItem.value.status
+      )}" cho sinh viên "${selectedItem.value.fullname}"`;
+      snackbarColor.value = "success";
+      snackbar.value = true;
+    })
+    .catch(() => {
+      snackbarText.value = `Cập nhật trạng thái cho sinh viên "${selectedItem.value.fullname}" thất bại!`;
+      snackbarColor.value = "error";
+      snackbar.value = true;
+    })
+    .finally(async () => {
+      emits("callApi");
 
-  // try {
-  //   await onActionUpdateRegisterFormDetail(selectedItem.value._id, note.value);
-
-  //   await fetchRegistrations();
-
-  //   snackbarText.value = "Đã lưu chi tiết đơn đăng ký phòng!";
-  //   snackbarColor.value = "green";
-  // } catch (error) {
-  //   snackbarText.value =
-  //     "Lưu thất bại: " + (error.response?.data?.message || error.message);
-  //   snackbarColor.value = "red";
-  // } finally {
-  //   snackbar.value = true;
-  //   dialogNote.value = false;
-  // }
+      dialogNote.value = false;
+    });
 };
 
 const handleExport = () => {
@@ -288,8 +275,6 @@ const fetchFilteredData = async () => {
   };
 
   emits("onSearch", params);
-
-  console.log("Gọi API với filter:", params);
 };
 
 watch(
@@ -421,6 +406,10 @@ onMounted(() => {
           Khu {{ item.room.building.name }}
         </template>
 
+        <template v-slot:item.duration="{ item }">
+          {{ formatDate(item.startDate) }}
+        </template>
+
         <template #item.paymentMethod="{ item }">
           <v-select
             v-model="item.paymentMethod"
@@ -494,7 +483,7 @@ onMounted(() => {
               variant="text"
               rounded="lg"
               size="small"
-              @click="openDialogNote(item)"
+              @click="openDialogNote(item, true)"
               ><v-icon></v-icon>
               <v-tooltip activator="parent" location="top"
                 >Thêm chi tiết</v-tooltip

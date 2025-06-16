@@ -197,7 +197,7 @@ const handleExport = () => {
     Phòng: item.room,
     "Danh mục sự cố": item.category,
     "Tiêu đề sự cố": item.title,
-    "Thời gian báo": formatDate(item.reportedAt),
+    "Thời gian báo": formatDate(item.createdAt),
     "Thời gian hoàn thành": formatDate(item.completedAt),
     "Trạng thái": item.status,
   }));
@@ -392,12 +392,11 @@ onMounted(() => {
     </v-card>
   </v-container>
 
-  <v-dialog v-model="dialog" max-width="800px">
+  <v-dialog v-model="dialog" max-width="600px">
     <v-card>
-      <v-img :src="selectedImage" aspect-ratio="16/9" cover></v-img>
+      <v-img :src="selectedImage"></v-img>
       <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn text @click="dialog = false">Đóng</v-btn>
+        <v-btn variant="text" @click="dialog = false">Đóng</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

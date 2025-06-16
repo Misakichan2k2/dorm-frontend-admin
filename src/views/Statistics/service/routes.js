@@ -12,7 +12,7 @@ export default [
   {
     path: "/statistics/issue",
     name: "StatisticsIssue",
-    component: () => import("../components/IssueTracking.vue"),
+    component: () => import("../components/ReportTracking.vue"),
   },
   {
     path: "/statistics/registration",

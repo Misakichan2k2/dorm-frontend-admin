@@ -11,10 +11,10 @@ const { onActionGetAllAccounts, onActionUpdateStatus, onActionDeleteAccount } =
 const router = useRouter();
 
 const searchQuery = ref("");
-const snackbar = ref(false);
-const snackbarMessage = ref("");
 const confirmDeleteDialog = ref(false);
 const userToDelete = ref(null);
+const snackbar = ref(false);
+const snackbarMessage = ref("");
 const snackbarColor = ref("success");
 
 const statusFilter = ref("");

@@ -55,7 +55,11 @@ watch(selectedTab, (newTab) => {
     </v-tabs>
 
     <v-card-text class="pa-0 bg-grey-lighten-4">
-      <AllRegistration :data="registrationData" @onSearch="onSearch" />
+      <AllRegistration
+        :data="registrationData"
+        @onSearch="onSearch"
+        @callApi="fetchData(selectedTab)"
+      />
     </v-card-text>
   </v-card>
 </template>

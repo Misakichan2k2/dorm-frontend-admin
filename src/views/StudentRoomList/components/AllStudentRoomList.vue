@@ -39,40 +39,7 @@ const headers = [
   { align: "center", key: "action", title: "Hành động", sortable: false },
 ];
 
-const students = ref([
-  // {
-  //   name: "Nguyễn Văn A",
-  //   studentId: "SV001",
-  //   phone: "0987654321",
-  //   building: "A1",
-  //   room: "101",
-  //   startDate: "2025-01-01",
-  //   endDate: "2025-06-30",
-  //   birthDate: "2002-05-15",
-  //   gender: "Nam",
-  //   religion: "Không",
-  //   ethnicity: "Kinh",
-  //   school: "Trường CNTT & TT",
-  //   faculty: "CNTT",
-  //   course: "K21",
-  //   class: "21CNTT01",
-  //   status: "Đang ở",
-  //   roomHistory: [
-  //     {
-  //       building: "A1",
-  //       room: "101",
-  //       startDate: "2024-07-01",
-  //       endDate: "2024-12-31",
-  //     },
-  //     {
-  //       building: "A2",
-  //       room: "202",
-  //       startDate: "2024-01-01",
-  //       endDate: "2024-06-30",
-  //     },
-  //   ],
-  // },
-]);
+const students = ref([]);
 const buildings = ref([]);
 const rooms = ref([]);
 

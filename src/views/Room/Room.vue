@@ -65,7 +65,8 @@ const buildingOptions = computed(() =>
 
 const buildingOptionsFilter = computed(() => [
   "Tất cả",
-  ...buildings.value.map((b) => b.name),
+  ...buildings.value.map((b) => b.name).sort((a, b) => a.localeCompare(b)),
+  ,
 ]);
 
 const genderOptions = ["Tất cả", "Nam", "Nữ"];

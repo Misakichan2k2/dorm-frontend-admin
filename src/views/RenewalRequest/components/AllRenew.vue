@@ -24,7 +24,7 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(["onSearch"]);
+const emits = defineEmits(["onSearch", "callApi"]);
 
 const dataRegistration = computed(() => props?.data);
 
@@ -124,7 +124,7 @@ const getStatusColor = (status) => {
     case "canceled":
       return "grey";
     default:
-      return "brown";
+      return "purple";
   }
 };
 
@@ -146,23 +146,9 @@ const getStatusLabel = (status) => {
 };
 
 const onStatusChange = async (item) => {
-  console.log(item);
+  console.log(item?._id);
 
-  try {
-    await onActionUpdateRenewalStatus(item._id, item.status);
-
-    snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
-      item.status
-    )}" cho sinh viên "${item.fullname}"`;
-    snackbarColor.value = "success";
-    snackbar.value = true;
-
-    fetchRenewals();
-  } catch (error) {
-    snackbarText.value = `Cập nhật trạng thái cho sinh viên "${item.fullname}" thất bại!`;
-    snackbarColor.value = "error";
-    snackbar.value = true;
-  }
+  openDialogNote(item);
 };
 
 const paymentMethods = ["Chuyển khoản", "Tiền mặt"];
@@ -213,28 +199,57 @@ const dialogNote = ref(false);
 const note = ref("");
 const selectedItem = ref(null);
 
-const openDialogNote = (item) => {
+const openDialogNote = (item, isDetail = false) => {
   selectedItem.value = item;
-  note.value = item.notes || "";
+  if (isDetail) {
+    console.log(item);
+
+    note.value = item.notes || "";
+  } else {
+    if (item?.status === "approved") {
+      note.value = `Đơn gia hạn thuê phòng của bạn đã được duyệt. Thời gian gia hạn thuê phòng đến hết ngày ${formatDate(
+        item?.student?.endDate
+      )}`;
+    } else if (item?.status === "rejected") {
+      note.value =
+        "Rất tiếc, đơn gia hạn thuê phòng của bạn đã bị từ chối. Vui lòng liên hệ Ban Quản lý Ký túc xá để biết thêm chi tiết. Ngoài ra, bạn vui lòng đến phòng Quản lý Ký túc xá để nhận lại số tiền đã thanh toán.";
+    } else if (item?.status === "pending") {
+      note.value =
+        "Đơn gia hạn thuê phòng của bạn đang chờ được xét duyệt. Vui lòng đợi hoặc liên hệ ban quản lý để biết thêm chi tiết.";
+    } else if (item?.status === "unpaid") {
+      note.value =
+        "Bạn chưa thanh toán. Vui lòng hoàn tất thanh toán trong vòng 24 giờ kể từ khi tạo đơn để đơn đăng ký không bị hủy.";
+    } else if (item?.status === "refunded") {
+      note.value = `Việc hoàn trả tiền cho sinh viên đã được thực hiện thành công.`;
+    } else {
+      note.value = ``;
+    }
+  }
   dialogNote.value = true;
 };
 
 const saveNote = async () => {
-  try {
-    await onActionUpdateRenewalFormDetail(selectedItem.value._id, note.value);
-
-    fetchRenewals();
-
-    snackbarText.value = "Đã lưu chi tiết đơn gia hạn thuê phòng!";
-    snackbarColor.value = "green";
-  } catch (error) {
-    snackbarText.value =
-      "Lưu thất bại: " + (error.response?.data?.message || error.message);
-    snackbarColor.value = "red";
-  } finally {
-    snackbar.value = true;
-    dialogNote.value = false;
-  }
+  await onActionUpdateRenewalFormDetail(selectedItem.value._id, note.value);
+  await onActionUpdateRenewalStatus(
+    selectedItem.value._id,
+    selectedItem.value.status
+  )
+    .then(() => {
+      snackbarText.value = `Đã cập nhật trạng thái thành "${getStatusLabel(
+        selectedItem.value.status
+      )}" cho sinh viên "${selectedItem.value.student.registration.fullname}"`;
+      snackbarColor.value = "green";
+    })
+    .catch(() => {
+      snackbarText.value =
+        "Lưu thất bại: " + (error.response?.data?.message || error.message);
+      snackbarColor.value = "red";
+    })
+    .finally(() => {
+      snackbar.value = true;
+      dialogNote.value = false;
+      emits("callApi");
+    });
 };
 
 const handleExport = () => {
@@ -476,7 +491,7 @@ onMounted(() => {
               variant="text"
               rounded="lg"
               size="small"
-              @click="openDialogNote(item)"
+              @click="openDialogNote(item, true)"
               ><v-icon></v-icon>
               <v-tooltip activator="parent" location="top"
                 >Thêm chi tiết</v-tooltip
@@ -510,7 +525,7 @@ onMounted(() => {
   </v-snackbar>
 
   <!-- Dialog Thêm chi tiết đơn đăng ký phòng -->
-  <v-dialog v-model="dialogNote" max-width="500" persistent>
+  <v-dialog v-model="dialogNote" max-width="500">
     <v-card class="rounded-lg elevation-10">
       <v-card-title class="text-h6 font-weight-bold text-blue-600">
         📝 Thêm chi tiết đơn đăng ký phòng

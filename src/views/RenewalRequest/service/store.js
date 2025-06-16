@@ -39,9 +39,9 @@ export const StoreRenewal = defineStore("StoreRenewal", () => {
     });
   };
 
-  const onActionUpdateRenewalStatus = async (id, payload) => {
+  const onActionUpdateRenewalStatus = async (id, status) => {
     return await setup({
-      apiFunction: API.updateRenewalStatus(id, payload),
+      apiFunction: API.updateRenewalStatus(id, status),
     });
   };
 
@@ -51,9 +51,9 @@ export const StoreRenewal = defineStore("StoreRenewal", () => {
     });
   };
 
-  const onActionUpdateRenewalFormDetail = async (id, payload) => {
+  const onActionUpdateRenewalFormDetail = async (id, data) => {
     return await setup({
-      apiFunction: API.updateRenewalFormDetail(id, payload),
+      apiFunction: API.updateRenewalFormDetail(id, data),
     });
   };
 
