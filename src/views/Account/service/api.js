@@ -40,7 +40,7 @@ class ApiAccount {
   deleteAccount = async (id) => {
     return await AxiosInstance({
       method: "DELETE",
-      url: `accounts/${id}`,
+      url: `users/${id}`,
     });
   };
 
