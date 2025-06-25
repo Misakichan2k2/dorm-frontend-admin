@@ -125,7 +125,7 @@ const chartOptions = {
     type: "bar",
     toolbar: { show: false },
   },
-  colors: ["#57b4fa", "#C1FFD7", "#FFB2A6", "#FFE6E6", "#E4BAD4", "#B5DEFF"],
+  colors: ["#1976d2"],
   plotOptions: {
     bar: {
       borderRadius: 4,

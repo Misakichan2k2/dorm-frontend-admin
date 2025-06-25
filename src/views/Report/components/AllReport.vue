@@ -174,13 +174,15 @@ const snackbarText = ref("");
 const snackbarColor = ref("");
 const detailDialog = ref(false);
 
-const onStatusChange = (item, newStatus) => {
+const onStatusChange = async (item, newStatus) => {
   item.status = newStatus;
-  onActionUpdateReportStatus(item._id, newStatus);
+  await onActionUpdateReportStatus(item._id, newStatus);
 
   snackbarText.value = `Đã cập nhật trạng thái thành "${newStatus}" cho "${item.title}"`;
   snackbarColor.value = getStatusColor(newStatus);
   snackbar.value = true;
+
+  fetchReports();
 };
 
 const openDetailDialog = (rp) => {

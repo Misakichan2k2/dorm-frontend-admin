@@ -274,6 +274,8 @@ const fetchFilteredData = async () => {
     gender: genderFilter.value === "Tất cả" ? null : genderFilter.value,
   };
 
+  console.log(params);
+
   emits("onSearch", params);
 };
 

@@ -118,7 +118,7 @@ const chartOptions = computed(() => ({
       columnWidth: "80%",
     },
   },
-  colors: ["#00CD00", "#F4AE00"],
+  colors: ["#7e57c2", "#66bb6a"],
   dataLabels: {
     enabled: false,
     style: {

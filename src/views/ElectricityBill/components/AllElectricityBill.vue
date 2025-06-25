@@ -116,7 +116,7 @@ const selectedStatus = ref("Tất cả");
 
 // Lựa chọn tháng, năm, trạng thái
 const monthOptions = ["Tất cả", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-const yearOptions = ["Tất cả", 2024, 2025, 2026];
+const yearOptions = ["Tất cả", 2024, 2025];
 const overdueOptions = ["Tất cả", "Đã quá hạn", "Chưa quá hạn"];
 
 const selectedBuilding = ref("Tất cả");

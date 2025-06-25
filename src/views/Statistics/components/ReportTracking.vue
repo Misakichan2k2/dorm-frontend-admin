@@ -18,21 +18,15 @@ const reportCategorys = [
   "Khác",
 ];
 const statuses = ["Tất cả", "Chờ xử lý", "Đang xử lý", "Đã xử lý"];
-const months = [
-  "Tất cả",
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "11",
-  "12",
-];
+const months = computed(() => {
+  return [
+    { text: "Tất cả", value: null },
+    ...Array.from({ length: 12 }, (_, i) => ({
+      text: `Tháng ${i + 1}`,
+      value: i + 1,
+    })),
+  ];
+});
 const years = computed(() => {
   const uniqueYears = new Set(
     reports.value.map((r) => new Date(r.createdAt).getFullYear())
@@ -67,10 +61,13 @@ const fetchBuildings = () => {
     .catch(console.error);
 };
 
-const buildingOptions = computed(() => [
-  "Tất cả",
-  ...buildings.value.map((b) => b.name).sort((a, b) => a.localeCompare(b)),
-]);
+const buildingOptions = computed(() => {
+  const buildings = [...new Set(reports.value.map((i) => i.building))].sort();
+  return [
+    { text: "Tất cả", value: null },
+    ...buildings.map((b) => ({ text: `Khu ${b}`, value: b })),
+  ];
+});
 
 const formatDate = (date) => {
   return date ? format(new Date(date), "dd/MM/yyyy", { locale: vi }) : "";
@@ -164,6 +161,8 @@ onMounted(() => {
             <v-select
               v-model="filters.building"
               :items="buildingOptions"
+              item-title="text"
+              item-value="value"
               hide-details
               variant="outlined"
               density="compact"
@@ -194,6 +193,8 @@ onMounted(() => {
             <v-select
               v-model="filters.month"
               :items="months"
+              item-title="text"
+              item-value="value"
               hide-details
               variant="outlined"
               density="compact"

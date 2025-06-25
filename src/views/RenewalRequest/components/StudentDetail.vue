@@ -98,7 +98,7 @@ onMounted(() => {
         variant="outlined"
         color="primary"
         class="mb-4"
-        to="/registration"
+        to="/renewal-request"
       >
         Quay lại
       </v-btn>

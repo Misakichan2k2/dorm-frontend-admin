@@ -23,7 +23,6 @@ const users = ref([]);
 
 const fetchUsers = async () => {
   await onActionGetAllAccounts().then((res) => {
-    console.log(res);
     users.value = res?.data;
   });
 };

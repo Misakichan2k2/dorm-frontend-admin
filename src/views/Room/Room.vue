@@ -296,17 +296,6 @@ onMounted(() => {
         </v-col>
 
         <v-col cols="12" md="4">
-          <span style="font-size: 14px">Giới tính:</span>
-          <v-select
-            v-model="selectedGender"
-            :items="genderOptions"
-            variant="outlined"
-            density="compact"
-            hide-details
-          ></v-select>
-        </v-col>
-
-        <v-col cols="12" md="4">
           <span style="font-size: 14px">Khu nhà:</span>
           <v-combobox
             v-model="selectedBuilding"
@@ -317,6 +306,17 @@ onMounted(() => {
             density="compact"
             hide-details
           ></v-combobox>
+        </v-col>
+
+        <v-col cols="12" md="4">
+          <span style="font-size: 14px">Giới tính:</span>
+          <v-select
+            v-model="selectedGender"
+            :items="genderOptions"
+            variant="outlined"
+            density="compact"
+            hide-details
+          ></v-select>
         </v-col>
 
         <!-- Hàng 2 -->

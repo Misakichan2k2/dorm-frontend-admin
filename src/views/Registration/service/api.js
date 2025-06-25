@@ -33,10 +33,11 @@ class ApiRegistration {
     });
   };
 
-  getRegistrationsByStatus = async () => {
+  getRegistrationsByStatus = async (params) => {
     return await AxiosInstance({
       method: "GET",
       url: `registration/registrations`,
+      params,
     });
   };
 

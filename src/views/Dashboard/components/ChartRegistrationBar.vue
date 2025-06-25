@@ -61,7 +61,7 @@ watch(
       datasets: [
         {
           label: "Tổng số đơn đăng ký",
-          backgroundColor: "#a1c4fd",
+          backgroundColor: "#629dfc",
           data: result.map((d) => d.count),
           borderRadius: 6,
         },

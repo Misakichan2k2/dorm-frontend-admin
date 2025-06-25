@@ -27,7 +27,11 @@ const fetchData = async (status) => {
 };
 
 const onSearch = async (params) => {
+  console.log(params);
+
   const res = await onActionGetRegistrationsStatus(params);
+  console.log(res.data);
+
   registrationData.value = res.data;
 };
 

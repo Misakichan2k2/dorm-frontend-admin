@@ -9,13 +9,9 @@ export const RESPONSE = () => {
   }) => {
     return apiFunction
       .then((data) => {
-        console.log(data);
-
         return data;
       })
       .catch((error) => {
-        console.log(error);
-
         appStore().onActionSetPopupMessage({
           type: "error",
           content: error?.response?.data?.message,

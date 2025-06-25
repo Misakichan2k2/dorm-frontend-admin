@@ -16,6 +16,7 @@ const route = useRoute();
 const isEditing = ref(false);
 const snackbar = ref(false);
 const snackbarMessage = ref("");
+const showImageDialog = ref(false);
 
 const formData = ref({});
 
@@ -112,124 +113,136 @@ onMounted(() => {
       </v-btn> -->
     </v-row>
 
-    <v-card class="mb-5">
-      <!-- Avatar -->
-      <v-col cols="12" md="3" class="text-center">
-        <v-avatar size="180">
-          <v-img
-            src="https://pbs.twimg.com/profile_images/481865412657684481/Nl5wU0EL_400x400.jpeg"
-            alt="Avatar"
-          ></v-img>
-        </v-avatar>
-      </v-col>
-    </v-card>
-
-    <!-- Thông tin cá nhân -->
-    <v-card class="mb-5">
+    <v-card class="mb-5 pb-5">
       <v-card-title>
         <v-icon class="me-2" color="primary">mdi-account</v-icon>
         Thông tin cá nhân
       </v-card-title>
+
       <v-divider />
-      <v-card-text>
-        <v-row dense>
-          <InfoItem label="Họ và tên">
-            <template #default>
-              <div class="d-flex align-center">
-                <span v-if="!isEditing">{{
-                  formData?.registration?.fullname
-                }}</span>
-                <v-text-field
-                  v-else
-                  v-model="editData.registration.fullname"
-                  density="compact"
-                  variant="outlined"
-                  hide-details
-                />
-              </div>
-            </template>
-          </InfoItem>
 
-          <InfoItem label="Ngày sinh">
-            <template #default>
-              <span v-if="!isEditing">
-                {{ formatDate(formData?.registration?.birthDate) }}</span
+      <!-- Avatar -->
+      <v-row class="mt-2 d-flex align-center">
+        <v-col cols="12" md="3" class="text-center">
+          <v-tooltip text="Ấn để xem ảnh" location="top">
+            <template #activator="{ props }">
+              <v-avatar
+                v-bind="props"
+                size="150"
+                @click="showImageDialog = true"
+                style="cursor: pointer"
               >
-              <v-date-input
-                v-else
-                v-model="editData.registration.birthDate"
-                variant="outlined"
-                density="compact"
-                hide-details
-                prepend-icon=""
-                prepend-inner-icon="mdi-calendar"
-                persistent-placeholder
-              />
+                <v-img
+                  :src="formData?.registration?.image"
+                  alt="Avatar"
+                ></v-img>
+              </v-avatar>
             </template>
-          </InfoItem>
+          </v-tooltip>
+        </v-col>
 
-          <InfoItem label="Giới tính">
-            <template #default>
-              <span v-if="!isEditing">{{
-                formData?.registration?.gender
-              }}</span>
-              <v-select
-                v-else
-                v-model="editData.registration.gender"
-                :items="['Nam', 'Nữ', 'Khác']"
-                density="compact"
-                variant="outlined"
-                hide-details
-              />
-            </template>
-          </InfoItem>
+        <v-col class="mb-5">
+          <v-card-text>
+            <v-row dense>
+              <InfoItem label="Họ và tên">
+                <template #default>
+                  <div class="d-flex align-center">
+                    <span v-if="!isEditing">{{
+                      formData?.registration?.fullname
+                    }}</span>
+                    <v-text-field
+                      v-else
+                      v-model="editData.registration.fullname"
+                      density="compact"
+                      variant="outlined"
+                      hide-details
+                    />
+                  </div>
+                </template>
+              </InfoItem>
 
-          <InfoItem label="Tôn giáo">
-            <template #default>
-              <span v-if="!isEditing">{{
-                formData?.registration?.religion
-              }}</span>
-              <v-text-field
-                v-else
-                v-model="editData.registration.religion"
-                density="compact"
-                variant="outlined"
-                hide-details
-              />
-            </template>
-          </InfoItem>
+              <InfoItem label="Ngày sinh">
+                <template #default>
+                  <span v-if="!isEditing">
+                    {{ formatDate(formData?.registration?.birthDate) }}</span
+                  >
+                  <v-date-input
+                    v-else
+                    v-model="editData.registration.birthDate"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    prepend-icon=""
+                    prepend-inner-icon="mdi-calendar"
+                    persistent-placeholder
+                  />
+                </template>
+              </InfoItem>
 
-          <InfoItem label="Dân tộc">
-            <template #default>
-              <span v-if="!isEditing">{{
-                formData?.registration?.ethnicity
-              }}</span>
-              <v-text-field
-                v-else
-                v-model="editData.registration.ethnicity"
-                density="compact"
-                variant="outlined"
-                hide-details
-              />
-            </template>
-          </InfoItem>
+              <InfoItem label="Giới tính">
+                <template #default>
+                  <span v-if="!isEditing">{{
+                    formData?.registration?.gender
+                  }}</span>
+                  <v-select
+                    v-else
+                    v-model="editData.registration.gender"
+                    :items="['Nam', 'Nữ', 'Khác']"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                  />
+                </template>
+              </InfoItem>
 
-          <InfoItem label="CMND/CCCD">
-            <template #default>
-              <span v-if="!isEditing">{{
-                formData?.registration?.identityNumber
-              }}</span>
-              <v-text-field
-                v-else
-                v-model="editData.registration.identityNumber"
-                density="compact"
-                variant="outlined"
-                hide-details
-              />
-            </template>
-          </InfoItem>
-        </v-row>
-      </v-card-text>
+              <InfoItem label="Tôn giáo">
+                <template #default>
+                  <span v-if="!isEditing">{{
+                    formData?.registration?.religion
+                  }}</span>
+                  <v-text-field
+                    v-else
+                    v-model="editData.registration.religion"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                  />
+                </template>
+              </InfoItem>
+
+              <InfoItem label="Dân tộc">
+                <template #default>
+                  <span v-if="!isEditing">{{
+                    formData?.registration?.ethnicity
+                  }}</span>
+                  <v-text-field
+                    v-else
+                    v-model="editData.registration.ethnicity"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                  />
+                </template>
+              </InfoItem>
+
+              <InfoItem label="CMND/CCCD">
+                <template #default>
+                  <span v-if="!isEditing">{{
+                    formData?.registration?.identityNumber
+                  }}</span>
+                  <v-text-field
+                    v-else
+                    v-model="editData.registration.identityNumber"
+                    density="compact"
+                    variant="outlined"
+                    hide-details
+                  />
+                </template>
+              </InfoItem>
+            </v-row>
+          </v-card-text>
+        </v-col>
+      </v-row>
     </v-card>
 
     <!-- Hộ khẩu -->
@@ -447,6 +460,16 @@ onMounted(() => {
       <v-btn color="grey" variant="tonal" @click="cancelEditing">Hủy</v-btn>
     </v-row>
   </v-container>
+
+  <!-- Dialog hiển thị ảnh lớn -->
+  <v-dialog v-model="showImageDialog" max-width="600">
+    <div>
+      <v-img :src="formData.registration.image"></v-img>
+    </div>
+    <div class="d-flex justify-end bg-white">
+      <v-btn variant="text" @click="showImageDialog = false">Đóng</v-btn>
+    </div>
+  </v-dialog>
 
   <v-snackbar
     v-model="snackbar"

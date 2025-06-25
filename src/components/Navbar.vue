@@ -3,7 +3,7 @@ import { ref } from "vue";
 import { onDeleteAppLocalStorage } from "@/utils";
 
 const drawer = ref(true);
-const rail = ref(false);
+const rail = ref(true);
 
 const toggleRail = () => {
   rail.value = !rail.value;
@@ -19,6 +19,8 @@ const onLogout = () => {
     v-model="drawer"
     :rail="rail"
     permanent
+    @mouseenter="rail = false"
+    @mouseleave="rail = true"
     class="glass-card"
   >
     <!-- Header của sidebar -->
